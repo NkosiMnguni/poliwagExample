@@ -5,9 +5,8 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.neo4j.core.Neo4jClient;
 import org.springframework.stereotype.Repository;
-import org.springframework.stereotype.Service;
 
-import swe.poliwagexample.entity.User;
+import swe.poliwagexample.dto.UserDto;
 
 
 @Repository
@@ -20,14 +19,14 @@ public class Neo4jDao {
         this.neo4jClient = neo4jClient;
     }
 
-    public void addUsers(List<User> users){
+    public void addUsers(List<UserDto> users){
         String cypherQuery = """
                 CREATE (u:User {name: $name})
                 """;
 
-        for (User user: users){
+        for (UserDto user: users){
             neo4jClient.query(cypherQuery)
-                    .bind(user.getLogin()).to("name").run();
+                    .bind(user.userName()).to("name").run();
         }
 
     }

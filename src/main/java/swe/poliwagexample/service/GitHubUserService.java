@@ -1,23 +1,26 @@
 package swe.poliwagexample.service;
 
+import java.io.IOException;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
-import swe.poliwagexample.entity.User;
+import swe.poliwagexample.dto.UserDto;
 
 @Slf4j
 @Service
 public class GitHubUserService {
-    List<User> getUsers() {
-        List<User> users = new ArrayList<>();
+    List<UserDto> getUsers() {
+        List<UserDto> list = new ArrayList<>();
         try {
             // Step 1: Create an HttpClient instance
             HttpClient httpClient = HttpClient.newHttpClient();
@@ -33,12 +36,20 @@ public class GitHubUserService {
 
             // Step 4: Handle the response
             ObjectMapper objectMapper = new ObjectMapper();
-            users = objectMapper.readValue(httpResponse.body(), objectMapper.getTypeFactory().constructCollectionType(List.class, User.class));
-            users.forEach(user -> log.info(user.getLogin()));
+            List<Map> users = objectMapper.readValue(httpResponse.body(), objectMapper.getTypeFactory().constructCollectionType(List.class, Map.class));
+
+            list = users.stream()
+                    .map(user -> new UserDto((int) user.get("id"), (String) user.get("login")))
+                    .collect(Collectors.toList());
+
             log.info("Total users: " + users.size());
-        } catch (Exception e) {
+        } catch (IOException e) {
+            log.error(e.toString());
             e.printStackTrace();
+        } catch (InterruptedException e){
+            log.error(e.toString());
+            Thread.currentThread().interrupt();
         }
-        return users;
+        return list;
     }
 }
