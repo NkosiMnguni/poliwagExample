@@ -20,15 +20,35 @@ public class Neo4jDao {
     }
 
     public void addUsers(List<UserDto> users){
-        String cypherQuery = """
-                CREATE (u:User {name: $name})
+        String createUserQuery = """
+                MERGE (u:User {githubId: $githubId})
+                ON CREATE SET u.userName = $userName
                 """;
 
-        for (UserDto user: users){
-            neo4jClient.query(cypherQuery)
-                    .bind(user.userName()).to("name").run();
-        }
+        String createFollowsAndRelationQuery = """
+                MERGE (f:User {githubId: $followerId})
+                ON CREATE SET f.userName = $followerName
+                WITH f
+                MATCH (u:User {githubId: $userId})
+                MERGE (f)-[:FOLLOWS]->(u)
+                """;
 
+        for (UserDto user: users) {
+            // Create the main user
+            neo4jClient.query(createUserQuery)
+                    .bind(user.githubId()).to("githubId")
+                    .bind(user.userName()).to("userName")
+                    .run();
+
+            for (UserDto follower : user.followers()) {
+                // Create the follower user nodes and the follows relationship
+                neo4jClient.query(createFollowsAndRelationQuery)
+                        .bind(user.githubId()).to("userId")
+                        .bind(follower.githubId()).to("followerId")
+                        .bind(follower.userName()).to("followerName")
+                        .run();
+            }
+        }
     }
 
 }
