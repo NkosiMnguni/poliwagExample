@@ -1,4 +1,6 @@
 package swe.poliwagexample.dto;
 
-public record UserDto(int githubId, String userName) {
+import java.util.List;
+
+public record UserDto(int githubId, String userName, List<UserDto> followers) {
 }
