@@ -19,8 +19,12 @@ public class PopulateGraphController {
     }
 
     @PostMapping("/populate-neo4j-graph")
-    public ResponseEntity populateGraph(){
-        populateGraphService.populateGraph();
-        return ResponseEntity.ok().build();
+    public ResponseEntity<String>  populateGraph(){
+        boolean success = populateGraphService.populateGraph();
+        if (success) {
+            return ResponseEntity.ok("Graph populated successfully");
+        } else {
+            return ResponseEntity.status(500).body("Failed to populate graph");
+        }
     }
 }
