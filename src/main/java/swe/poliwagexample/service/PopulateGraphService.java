@@ -19,7 +19,12 @@ public class PopulateGraphService {
     }
 
 
-    public void populateGraph(){
-        populateGraphDao.populateNeo4j(gitHubApiService.getUsers());
+    public boolean populateGraph(){
+        try {
+            populateGraphDao.populateNeo4j(gitHubApiService.getUsers());
+            return true;
+        } catch (Exception e) {
+            return false;
+        }
     }
 }
